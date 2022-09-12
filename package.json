@@ -1,0 +1,23 @@
+{
+  "name": "craigslist-renew",
+  "version": "1.0.0",
+  "description": "A nodejs app for renewing listings on Craigslist.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alh311/CraigslistRenewJS.git"
+  },
+  "keywords": [
+    "craigslist",
+    "renew"
+  ],
+  "author": "Alex Hutchins",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alh311/CraigslistRenewJS/issues"
+  },
+  "homepage": "https://github.com/alh311/CraigslistRenewJS#readme"
+}
