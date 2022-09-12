@@ -19,5 +19,11 @@
   "bugs": {
     "url": "https://github.com/alh311/CraigslistRenewJS/issues"
   },
-  "homepage": "https://github.com/alh311/CraigslistRenewJS#readme"
+  "homepage": "https://github.com/alh311/CraigslistRenewJS#readme",
+  "devDependencies": {
+    "dotenv": "^16.0.2"
+  },
+  "dependencies": {
+    "puppeteer": "^17.1.3"
+  }
 }
