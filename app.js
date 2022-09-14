@@ -22,7 +22,8 @@ async function run() {
     await page.goto(loginUrl);
 
     // Close all pages besides the one we want (e.g. about:blank)
-    let itemPages = (await browser.pages()).filter(p => p != page);
+    let itemPages = (await browser.pages())
+        .filter(p => p != page);
     itemPages.forEach(async p => await p.close());
 
     // Login page
@@ -35,40 +36,13 @@ async function run() {
     ]);
 
     // Check for an auth error
-    const hasError = await page.$eval('.submit-onetime-link-button', () => true).catch(() => false);
-    if (hasError) {
-        console.log('\n\nThere was an error authenticating.\n\n'
-            + 'If this is your first time using the app, make sure your email and password are correct in the .env file.\n'
-            + 'If your email and password are correct, try running the app again. Sometimes Craigslist flags logs authentication attemps as suspicious.'
-        );
-        await browser.close();
-        return;
+    if (await hasAuthError(page)) {
+        logAuthError();
     }
-
-    // Account page
-    logPage(await page.title());
-    const renewButtons = await page.$$(`input[value="${buttonValue}"][type="submit"]`);
-
-
-    let count = 0;
-    let pageCount = 1;
-    await page.keyboard.down('Shift');
-    for (const button of renewButtons) {
-        await button.click();
-        ++pageCount;
-        ++count;
-        if (count >= 5) {
-            break;
-        }
-    }
-    await page.keyboard.up('Shift');
-
-    itemPages = (await getAllPages(browser, pageCount))
-        .filter(p => p != page);
-
-    console.log(`Pages: ${itemPages.length}`)
-    for (const p of itemPages) {
-        console.log(await p.$eval('#titletextonly', el => el.innerText));
+    else {
+        // Account page
+        logPage(await page.title());
+        await renewItems(browser, page);
     }
 
     await browser.close();
@@ -78,8 +52,43 @@ function logPage(title) {
     console.log(`Page: ${title}`);
 }
 
+async function hasAuthError(page) {
+    return await page.$eval('.submit-onetime-link-button', () => true).catch(() => false);
+}
+
+function logAuthError() {
+    console.log('\n\nThere was an error authenticating.\n\n'
+        + 'If this is your first time using the app, make sure your email and password are correct in the .env file.\n'
+        + 'If your email and password are correct, try running the app again. Sometimes Craigslist flags logs authentication attemps as suspicious.'
+    );
+}
+
 function sleep(ms) {
     return new Promise(r => setTimeout(r, ms));
+}
+
+async function renewItems(browser, page) {
+    const renewButtons = await page.$$(`input[value="${buttonValue}"][type="submit"]`);
+
+    let count = 0;
+    let pageCount = 1;
+    // Use the shift key to open each item in a new window.
+    // This allows us to click each button on the account page without having to navigate back after each click.
+    await page.keyboard.down('Shift');
+    for (const button of renewButtons) {
+        await button.click();
+        ++pageCount;
+        ++count;
+        // if (count >= 5) {
+        //     break;
+        // }
+    }
+    await page.keyboard.up('Shift');
+
+    itemPages = (await getAllPages(browser, pageCount))
+        .filter(p => p != page);
+
+    await logRenewedItems(itemPages);
 }
 
 async function getAllPages(browser, expectedPageCount) {
@@ -92,7 +101,15 @@ async function getAllPages(browser, expectedPageCount) {
     do {
         pages = await browser.pages();
         currentTime = new Date();
+        // console.log(`iteration: ${currentTime - startTime}, pages ${pages.length}`);
     } while (pages.length < expectedPageCount && currentTime - startTime <= pageLoadWaitMs)
 
     return pages;
+}
+
+async function logRenewedItems(itemPages) {
+    console.log(`Pages: ${itemPages.length}`)
+    for (const p of itemPages) {
+        console.log(await p.$eval('#titletextonly', el => el.innerText));
+    }
 }
