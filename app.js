@@ -3,6 +3,9 @@ const puppeteer = require('puppeteer');
 
 const loginUrl = 'https://accounts.craigslist.org/login';
 
+// This can be set to 'display' for debugging purposes.
+const buttonValue = 'display';
+
 (async () => {
     await run();
 })();
@@ -27,18 +30,20 @@ async function run() {
         page.click('#login')
     ]);
 
-    // Auth Error
-    // TODO: better error message and better code structure.
+    // Check for an auth error
     const hasError = await page.$eval('.submit-onetime-link-button', () => true).catch(() => false);
     if (hasError) {
-        console.log('There was an error authenticating.')
+        console.log('\n\nThere was an error authenticating.\n\n'
+            + 'If this is your first time using the app, make sure your email and password are correct in the .env file.\n'
+            + 'If your email and password are correct, try running the app again. Sometimes Craigslist flags logs authentication attemps as suspicious.'
+        );
         await browser.close();
         return;
     }
 
     // Account page
     logPage(await page.title());
-    const renewButtons = await page.$$('input[value="display"][type="submit"]');
+    const renewButtons = await page.$$(`input[value="${buttonValue}"][type="submit"]`);
 
     let count = 0;
     await page.keyboard.down('Shift');
