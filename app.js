@@ -108,8 +108,10 @@ async function getAllPages(browser, expectedPageCount) {
 }
 
 async function logRenewedItems(itemPages) {
-    console.log(`Pages: ${itemPages.length}`)
+    console.log('\nItems renewed:');
     for (const p of itemPages) {
-        console.log(await p.$eval('#titletextonly', el => el.innerText));
+        console.log(`\t${await p.$eval('#titletextonly', el => el.innerText)}`);
     }
+
+    console.log(`\nNumber of renewals: ${itemPages.length}`)
 }
