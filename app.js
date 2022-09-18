@@ -71,13 +71,13 @@ async function renewItems(browser, page) {
     const renewButtons = await page.$$(`input[value="${buttonValue}"][type="submit"]`);
 
     let count = 0;
-    let pageCount = 1;
+    let itemCount = 0;
     // Use the shift key to open each item in a new window.
     // This allows us to click each button on the account page without having to navigate back after each click.
     await page.keyboard.down('Shift');
     for (const button of renewButtons) {
         await button.click();
-        ++pageCount;
+        ++itemCount;
         ++count;
         // if (count >= 5) {
         //     break;
@@ -85,13 +85,13 @@ async function renewItems(browser, page) {
     }
     await page.keyboard.up('Shift');
 
-    itemPages = (await getAllPages(browser, pageCount))
+    const itemPageCount = (await getPageCount(browser, itemCount + 1))
         .filter(p => p != page);
 
-    await logRenewedItems(itemPages);
+    logRenewedItems(itemCount, itemPageCount);
 }
 
-async function getAllPages(browser, expectedPageCount) {
+async function getPageCount(browser, expectedPageCount) {
     const startTime = new Date();
     let currentTime;
     let pages;
@@ -102,16 +102,12 @@ async function getAllPages(browser, expectedPageCount) {
         pages = await browser.pages();
         currentTime = new Date();
         // console.log(`iteration: ${currentTime - startTime}, pages ${pages.length}`);
-    } while (pages.length < expectedPageCount && currentTime - startTime <= pageLoadWaitMs)
+    } while (pages.length < expectedPageCount && currentTime - startTime <= pageLoadWaitMs);
 
-    return pages;
+    return pages.length;
 }
 
-async function logRenewedItems(itemPages) {
-    console.log('\nItems renewed:');
-    for (const p of itemPages) {
-        console.log(`\t${await p.$eval('#titletextonly', el => el.innerText)}`);
-    }
-
-    console.log(`\nNumber of renewals: ${itemPages.length}`)
+function logRenewedItems(itemCount, itemPageCount) {
+    console.log(`\nItems renewed: ${itemCount}`);
+    console.log(`Warnings: ${itemCount - itemPageCount}`);
 }
