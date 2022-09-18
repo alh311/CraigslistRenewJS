@@ -7,7 +7,7 @@ This is a nodejs app for renewing your listings on Craigslist.  You can manually
 
 ## Setup
 1. Navigate to, or open, the directory containing `bot.js` in your terminal app and run the command:
-    ```shell
+    ```bash
     $npm install
     ```
 
@@ -31,7 +31,7 @@ This is a nodejs app for renewing your listings on Craigslist.  You can manually
 1. Navigate to, or open, the directory containing `bot.js` in your terminal app.
 
 2. Run the command:
-    ```shell
+    ```zsh
     $ node bot.js
     ```
 
