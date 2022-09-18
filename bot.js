@@ -5,7 +5,7 @@ const puppeteer = require('puppeteer');
 const loginUrl = 'https://accounts.craigslist.org/login';
 
 // This can be set to 'display' for debugging purposes.
-const buttonValue = 'display';
+const buttonValue = 'renew';
 
 // The amount of time to wait for all pages to load after renewing items.
 const pageLoadWaitMs = 10000;
