@@ -14,17 +14,16 @@ const pageLoadWaitMs = 10000;
     await run();
 })();
 
+/** The main app method. */
 async function run() {
 
-    // Init the browswer, page, and goto initial page
+    // Init the browser, page, and go to the initial page.
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
     await page.goto(loginUrl);
 
     // Close all pages besides the one we want (e.g. about:blank)
-    let itemPages = (await browser.pages())
-        .filter(p => p != page);
-    itemPages.forEach(async p => await p.close());
+    await closeExtraPages(browser, page);
 
     // Login page
     logPage(await page.title());
@@ -48,25 +47,19 @@ async function run() {
     await browser.close();
 }
 
-function logPage(title) {
-    console.log(`Page: ${title}`);
+/** Close all pages besides the one we want (e.g. about:blank) */
+async function closeExtraPages(browser, page) {
+    const itemPages = (await browser.pages())
+        .filter(p => p != page);
+    itemPages.forEach(async p => await p.close());
 }
 
+/** Checks for an authentication error on Craigslist. */
 async function hasAuthError(page) {
     return await page.$eval('.submit-onetime-link-button', () => true).catch(() => false);
 }
 
-function logAuthError() {
-    console.log('\n\nThere was an error authenticating.\n\n'
-        + 'If this is your first time using the app, make sure your email and password are correct in the .env file.\n'
-        + 'If your email and password are correct, try running the app again. Sometimes Craigslist flags logs authentication attemps as suspicious.'
-    );
-}
-
-function sleep(ms) {
-    return new Promise(r => setTimeout(r, ms));
-}
-
+/** Renews any renewable items. */
 async function renewItems(browser, page) {
     const renewButtons = await page.$$(`input[value="${buttonValue}"][type="submit"]`);
 
@@ -79,19 +72,22 @@ async function renewItems(browser, page) {
         await button.click();
         ++itemCount;
         ++count;
-        // if (count >= 5) {
+        // if (count >= 10) {
         //     break;
         // }
     }
     await page.keyboard.up('Shift');
 
-    const itemPageCount = (await getPageCount(browser, itemCount + 1))
-        .filter(p => p != page);
+    // Determine the item page count by filtering the account page out of all pages.
+    const itemPageCount = (await getAllPages(browser, itemCount + 1))
+        .filter(p => p != page)
+        .length;
 
     logRenewedItems(itemCount, itemPageCount);
 }
 
-async function getPageCount(browser, expectedPageCount) {
+/** Gets all open pages. */
+async function getAllPages(browser, expectedPageCount) {
     const startTime = new Date();
     let currentTime;
     let pages;
@@ -104,10 +100,31 @@ async function getPageCount(browser, expectedPageCount) {
         // console.log(`iteration: ${currentTime - startTime}, pages ${pages.length}`);
     } while (pages.length < expectedPageCount && currentTime - startTime <= pageLoadWaitMs);
 
-    return pages.length;
+    return pages;
 }
 
-function logRenewedItems(itemCount, itemPageCount) {
-    console.log(`\nItems renewed: ${itemCount}`);
-    console.log(`Warnings: ${itemCount - itemPageCount}`);
+// #region Logging
+/** Logs the current page's title. */
+function logPage(title) {
+    console.log(`Page: ${title}`);
 }
+
+/** Logs info about the renewed items and any warnings. */
+function logRenewedItems(itemCount, itemPageCount) {
+    const warningCount = itemCount - itemPageCount;
+    console.log(`\nItems renewed: ${itemCount}`);
+    console.log(`Warnings: ${warningCount}\n`);
+
+    if (warningCount > 0) {
+        console.log('The number of warnings indicate how many items may have failed to renew. Re-run the app or renew manually.\n');
+    }
+}
+
+/** Logs an auth error with instructions. */
+function logAuthError() {
+    console.log('\n\nThere was an error authenticating.\n\n'
+        + 'If this is your first time using the app, make sure your email and password are correct in the .env file.\n'
+        + 'If your email and password are correct, try running the app again. Sometimes Craigslist flags logs authentication attemps as suspicious.\n'
+    );
+}
+// #endregion Logging
