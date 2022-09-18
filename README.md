@@ -6,15 +6,17 @@ This is a nodejs app for renewing your listings on Craigslist.  You can manually
 
 
 ## Setup
-1. Create a new, empty file named '`.env`' (not including the quotes) in the same directory as `bot.js`.
+1. Navigate to, or open, the directory containing `bot.js` in your terminal app and run the command: `npm install`
 
-2. Paste the following in `.env`:
+2. Create a new, empty file named '`.env`' (not including the quotes) in the same directory as `bot.js`.
+
+3. Paste the following in `.env`:
 
     ```
     EMAIL="<email>"
     PASSWORD="<password>"
     ```
-3. Replace the values inside the angle brackets (`< >`) with your own Craigslist email and password.  Remove the brackets but not the quotes.  For example:
+4. Replace the values inside the angle brackets (`< >`) with your own Craigslist email and password.  Remove the brackets but not the quotes.  For example:
 
     ```
     EMAIL="bogusemail@gmail.com"
