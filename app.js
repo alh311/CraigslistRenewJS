@@ -14,11 +14,13 @@ const pageLoadWaitMs = 10000;
     await run();
 })();
 
-/** The main app method. */
+/** The main bot method. */
 async function run() {
 
+    logStartup();
+
     // Init the browser, page, and go to the initial page.
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     await page.goto(loginUrl);
 
@@ -63,7 +65,6 @@ async function hasAuthError(page) {
 async function renewItems(browser, page) {
     const renewButtons = await page.$$(`input[value="${buttonValue}"][type="submit"]`);
 
-    let count = 0;
     let itemCount = 0;
     // Use the shift key to open each item in a new window.
     // This allows us to click each button on the account page without having to navigate back after each click.
@@ -71,10 +72,6 @@ async function renewItems(browser, page) {
     for (const button of renewButtons) {
         await button.click();
         ++itemCount;
-        ++count;
-        // if (count >= 10) {
-        //     break;
-        // }
     }
     await page.keyboard.up('Shift');
 
@@ -104,6 +101,12 @@ async function getAllPages(browser, expectedPageCount) {
 }
 
 // #region Logging
+/** Logs startup message. */
+function logStartup() {
+    console.log('\nCREATED BY ALEX HUTCHINS');
+    console.log('\nStarting up the bot...');
+}
+
 /** Logs the current page's title. */
 function logPage(title) {
     console.log(`Page: ${title}`);
@@ -116,15 +119,15 @@ function logRenewedItems(itemCount, itemPageCount) {
     console.log(`Warnings: ${warningCount}\n`);
 
     if (warningCount > 0) {
-        console.log('The number of warnings indicate how many items may have failed to renew. Re-run the app or renew manually.\n');
+        console.log('The number of warnings indicate how many items may have failed to renew. Re-run the bot or renew manually.\n');
     }
 }
 
 /** Logs an auth error with instructions. */
 function logAuthError() {
     console.log('\n\nThere was an error authenticating.\n\n'
-        + 'If this is your first time using the app, make sure your email and password are correct in the .env file.\n'
-        + 'If your email and password are correct, try running the app again. Sometimes Craigslist flags logs authentication attemps as suspicious.\n'
+        + 'If this is your first time using the bot, make sure your email and password are correct in the .env file.\n'
+        + 'If your email and password are correct, try running the bot again. Sometimes Craigslist flags authentication attemps as suspicious.\n'
     );
 }
 // #endregion Logging
